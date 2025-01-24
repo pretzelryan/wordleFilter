@@ -46,12 +46,28 @@ def get_word_list():
 
     :return: list of all possible words
     """
-    # open the file and get the words
+    # open the local file to get the words.
+    try:
+        return _open_word_list()
+
+    # if no file, then send the API request to generate the file, then return it.
+    except FileNotFoundError as e:
+        store_word_list()
+        return _open_word_list()
+
+
+def _open_word_list():
+    """
+    Opens the locally stored csv file with all possible wordle words.
+
+    Raises:
+        FileNotFoundError if csv file does not exist or cannot be found.
+
+    :return: list of all possible words
+    """
     with open(WORD_LIST_FILENAME, "r") as file:
         reader = csv.reader(file)
         words = [row for row in reader]
-
-    # TODO: try/catch for when the file does not exist (FileNotFoundError)
 
     return words
 
@@ -62,6 +78,9 @@ class WordleFilter:
 
     """
     def __init__(self):
-        # TODO: docstring
-        pass
+        """
+        Constructor.
+
+        """
+        remaining_word_list = get_word_list()
 
