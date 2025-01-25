@@ -82,5 +82,38 @@ class WordleFilter:
         Constructor.
 
         """
-        remaining_word_list = get_word_list()
+        self.remaining_word_list = get_word_list()
+        self.guess_list = []
 
+    def add_guess(self, guess: WordleGuess):
+        """
+        Adds the next guess to the guessed word list, then filters the remaining word list based on information from
+        the guess.
+
+        :param guess: WordleGuess used in game.
+        :return: None
+        """
+        self.guess_list.append(guess)
+        self._filter_word_list(guess)
+
+    def get_remaining_words(self):
+        """
+        Returns the remaining words for the given wordle game.
+
+        :return: list of remaining words.
+        """
+        return self.remaining_word_list
+
+    def _filter_word_list(self, guess: WordleGuess):
+        """
+        Filters out words from the remaining word list based on information from the guess.
+
+        :param guess: WordleGuess used in game.
+        :return: None
+        """
+        # Use a copy of the word list during iteration to avoid runtime errors.
+        for word in self.remaining_word_list.copy():
+            pass
+            # step 1: remove words that do not contain green letters in position.
+            # step 2: remove words that do not contain yellow letters in position other than the location given.
+            # step 3: remove words that contain grey letters.
