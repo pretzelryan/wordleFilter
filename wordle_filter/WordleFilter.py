@@ -10,8 +10,7 @@ import subprocess
 import csv
 
 # local package imports
-from .WordleGuess import WordleGuess
-
+from .WordleGuess import WordleGuess, LetterColor
 
 # Global variables
 WORD_LIST_FILENAME = "word_list.csv"
@@ -67,7 +66,7 @@ def _open_word_list():
     """
     with open(WORD_LIST_FILENAME, "r") as file:
         reader = csv.reader(file)
-        words = [row for row in reader]
+        words = [row for row in reader][0]
 
     return words
 
@@ -111,9 +110,37 @@ class WordleFilter:
         :param guess: WordleGuess used in game.
         :return: None
         """
+        green_index_list = guess.location_dict[LetterColor.GREEN]
+        yellow_index_list = guess.location_dict[LetterColor.YELLOW]
+        grey_index_list = guess.location_dict[LetterColor.YELLOW]
+
         # Use a copy of the word list during iteration to avoid runtime errors.
         for word in self.remaining_word_list.copy():
-            pass
-            # step 1: remove words that do not contain green letters in position.
-            # step 2: remove words that do not contain yellow letters in position other than the location given.
-            # step 3: remove words that contain grey letters.
+            # example dict = {green: [1, 2], yellow: [4], grey: [3, 5]}
+
+            # Remove words that do not contain green letters in position.
+            for i in green_index_list:
+                if word[i] != guess.word[i]:
+                    self.remaining_word_list.remove(word)
+                    break
+
+            # If the word was not yet removed:
+            # Remove words that do not contain yellow letters in position other than the location given.
+            else:
+                for i in yellow_index_list:
+                    # Remove the word if it does not contain the yellow letter.
+                    if i not in word:
+                        self.remaining_word_list.remove(word)
+                        break
+                    # Remove the word if it contains the yellow letter in the yellow index.
+                    if word[i] == guess.word[i]:
+                        self.remaining_word_list.remove(word)
+                        break
+
+                # If the word was not yet removed:
+                # Remove words that contain grey letters.
+                else:
+                    for i in grey_index_list:
+                        if i in word:
+                            self.remaining_word_list.remove(word)
+                            break
