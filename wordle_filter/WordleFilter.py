@@ -1,6 +1,6 @@
 ######################################
 #
-# TODO: documentation
+# WordleFilter - Class responsible for filtering word list down based on provided guesses.
 #
 # author - Ryan Muetzel (@pretzelryan)
 #

@@ -1,6 +1,7 @@
 ######################################
 #
-# TODO: documentation
+# WordleGuess - Class responsible for storing guess information for a Wordle game.
+# LetterColor - Enumeration class to represent correctness of a letter in a guess.
 #
 # author - Ryan Muetzel (@pretzelryan)
 #
