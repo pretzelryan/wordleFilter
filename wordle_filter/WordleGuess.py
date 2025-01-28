@@ -52,13 +52,13 @@ class WordleGuess:
         :return: Dictionary of length three, with elements "green", "yellow", and "grey" enumeration corresponding
         to integer lists that describe the locations of the colored elements.
         """
-        # example dict = {green: [1, 2], yellow: [4], grey: [3, 5]}
+        # example dict = {green: [1, 2], yellow: [4], grey: [3, 0]}
         location_dict = {LetterColor(0): [],
                          LetterColor(1): [],
                          LetterColor(2): []}
 
-        # add the index of the color to the corresponding list in the color dictionary
-        for i in range(len(self.color_list)):
-            location_dict[self.color_list[i]].append(i)
+        # Add the index of the color to the corresponding list in the color dictionary
+        for i, color in enumerate(self.color_list):
+            location_dict[color].append(i)
 
         return location_dict
