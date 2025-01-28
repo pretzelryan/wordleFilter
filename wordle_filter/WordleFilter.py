@@ -6,14 +6,17 @@
 #
 
 # imports
+import string
 import subprocess
 import csv
 
 # local package imports
-from .WordleGuess import WordleGuess, LetterColor
+from .WordleGuess import WordleGuess, LetterColor, LETTERS_IN_WORD
 
 # Global variables
 WORD_LIST_FILENAME = "word_list.csv"
+POSITION_FREQUENCY_WEIGHT = 3
+GENERAL_FREQUENCY_WEIGHT = 1
 
 
 def store_word_list():
@@ -62,13 +65,95 @@ def _open_word_list():
     Raises:
         FileNotFoundError if csv file does not exist or cannot be found.
 
-    :return: list of all possible words
+    :return: List of all possible words
     """
     with open(WORD_LIST_FILENAME, "r") as file:
         reader = csv.reader(file)
         words = [row for row in reader][0]
 
     return words
+
+
+def _calculate_letter_frequency(word_list: list[str]) -> dict:
+    """
+    Creates a dictionary corresponding to letter counts in each position.
+
+    :param word_list: List of words.
+    :return: Dictionary of positions corresponding with letter frequency.
+    """
+    letter_frequency = _initialize_letter_frequency_dict()
+
+    for word in word_list:
+        if len(word) != LETTERS_IN_WORD:
+            raise ValueError("Invalid word length.")
+
+        # Add one to the count for each letter and position.
+        for i in letter_frequency:
+            letter_frequency[i][word[i]] += 1
+
+    return letter_frequency
+
+
+def _initialize_letter_frequency_dict() -> dict:
+    """
+    Creates a blank dictionary to store letter counts for each position.
+
+    :return: Blank dictionary of positions corresponding with letter frequency.
+    """
+    letter_frequency = {}
+    for i in range(5):
+        new_alphabet_dict = {letter: 0 for letter in string.ascii_lowercase}
+        letter_frequency[i] = new_alphabet_dict
+
+    return letter_frequency
+
+
+def _get_best_guess_hashing(word_list: list[str]) -> str:
+    """
+    Determines the best guess based on the dynamic hashing method. This method uses the frequency and location
+    of letters to select a guess that has the highest quantity of shared letters with other words.
+
+    :return:
+    """
+    letter_frequency = _calculate_letter_frequency(word_list)
+
+    # assume the first word is the best word, until we find a better one
+    best_word = word_list[0]
+    best_score = 0
+
+    for word in word_list:
+        score = _get_hash_score(word, letter_frequency)
+        if score > best_score:
+            best_word = word
+            best_score = score
+
+    return best_word
+
+
+def _get_hash_score(word: str, letter_frequency: dict) -> int:
+    """
+    Calculates the hash score based on the frequency of letters in specific locations and general frequency.
+
+    :param word: Word to be evaluated.
+    :param letter_frequency: Dictionary of positions corresponding with letter frequency.
+    :return: Integer hash score for the word.
+    """
+    score = 0
+
+    # iterate through the indexes of the word
+    for i, letter in enumerate(word):
+        # determine the position specific score
+        position_score = letter_frequency[i][letter] * POSITION_FREQUENCY_WEIGHT
+
+        # determine the position independent score, excluding the current index
+        general_score = 0
+        for j in range(len(word)):
+            if j != i:
+                general_score += letter_frequency[j][letter] * GENERAL_FREQUENCY_WEIGHT
+
+        score += (position_score + general_score)
+
+    return score
 
 
 class WordleFilter:
@@ -99,7 +184,7 @@ class WordleFilter:
         """
         Returns the remaining words for the given wordle game.
 
-        :return: list of remaining words.
+        :return: List of remaining words.
         """
         return self.remaining_word_list
 
@@ -112,12 +197,10 @@ class WordleFilter:
         """
         green_index_list = guess.location_dict[LetterColor.GREEN]
         yellow_index_list = guess.location_dict[LetterColor.YELLOW]
-        grey_index_list = guess.location_dict[LetterColor.YELLOW]
+        grey_index_list = guess.location_dict[LetterColor.GREY]
 
         # Use a copy of the word list during iteration to avoid runtime errors.
         for word in self.remaining_word_list.copy():
-            # example dict = {green: [1, 2], yellow: [4], grey: [3, 5]}
-
             # Remove words that do not contain green letters in position.
             for i in green_index_list:
                 if word[i] != guess.word[i]:
@@ -129,7 +212,7 @@ class WordleFilter:
             else:
                 for i in yellow_index_list:
                     # Remove the word if it does not contain the yellow letter.
-                    if i not in word:
+                    if guess.word[i] not in word:
                         self.remaining_word_list.remove(word)
                         break
                     # Remove the word if it contains the yellow letter in the yellow index.
@@ -138,9 +221,25 @@ class WordleFilter:
                         break
 
                 # If the word was not yet removed:
-                # Remove words that contain grey letters.
+                # Remove words that contain grey letters that are not repeated in the green list.
                 else:
+                    # Since green letters can "consume" repeated letters, filter them out so they are not considered
+                    available_letters = [word[j] for j in range(len(word)) if j not in green_index_list]
                     for i in grey_index_list:
-                        if i in word:
+                        if guess.word[i] in available_letters:
                             self.remaining_word_list.remove(word)
                             break
+
+    def get_best_guess(self, hashing=True) -> str:
+        """
+        Gets the best guess for the Wordle puzzle using the current possible remaining words.
+
+        :return: String best word to guess.
+        """
+        pass
+
+        # If hashing is true, then use the dynamic hash method.
+        if hashing:
+            return _get_best_guess_hashing(self.remaining_word_list)
+
+        # If hashing is false, then use the entropy method.
