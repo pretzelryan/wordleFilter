@@ -32,7 +32,7 @@ class FilterTest(unittest.TestCase):
 
     def test_filter_perfect(self):
         """
-        Test the filter function by adding a word with only one green letter.
+        Test the filter function by adding a word with all green letters (solved).
 
         :return: None
         """
@@ -46,3 +46,38 @@ class FilterTest(unittest.TestCase):
         new_filter.add_guess(new_guess)
 
         self.assertEqual(["shark"], new_filter.remaining_word_list, "Filter did not find correct word.")
+
+    def test_filter_almost_perfect(self):
+        """
+        Test the filter by adding a word with all but one letter correct.
+
+        :return: None.
+        """
+        word = "PATIO"
+        int_color_list = [2, 0, 0, 0, 0]
+        enumeration_list = [LetterColor(num) for num in int_color_list]
+
+        new_guess = WordleGuess(word, enumeration_list)
+        new_filter = WordleFilter()
+
+        new_filter.add_guess(new_guess)
+
+        self.assertEqual(["ratio"], new_filter.remaining_word_list, "Filter did not find correct word.")
+
+    def test_filter_duplicate_letter(self):
+        """
+        Test the filter by processing a guess word that has a duplicate word in which one of the two duplicates is
+        correct.
+
+        :return: None.
+        """
+        word = "ARARS"
+        int_color_list = [2, 0, 0, 2, 0]
+        enumeration_list = [LetterColor(num) for num in int_color_list]
+
+        new_guess = WordleGuess(word, enumeration_list)
+        new_filter = WordleFilter()
+
+        new_filter.add_guess(new_guess)
+
+        self.assertNotEqual(0, len(new_filter.remaining_word_list), "Filter removed all remaining words.")
