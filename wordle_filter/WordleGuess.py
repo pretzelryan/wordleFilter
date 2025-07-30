@@ -33,7 +33,7 @@ class WordleGuess:
         """
         Constructor. Arguments must be length of 5, otherwise raises ValueError.
 
-        :param word: five letter word used in guess.
+        :param word: five-letter word used in guess.
         :param color_list: List of letter color enumerations in guess.
         """
         if len(word) != LETTERS_IN_WORD or len(color_list) != LETTERS_IN_WORD:
