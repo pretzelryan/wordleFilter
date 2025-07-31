@@ -145,8 +145,10 @@ def get_raw_word_list() -> list[str]:
 
 def import_word_list():
     """
-    Retrieves the word list from nytimes word list file.
+    Retrieves the word list from nytimes remote word list file.
 
+    :return: None
+    :rtype: NoneType
     """
     # set up the subprocess to get the word list from GitHub repo
     command = "curl -s https://static01.nytimes.com/newsgraphics/wordlebot/_big_assets/words.txt"
@@ -167,6 +169,8 @@ def generate_words_file():
     """
     Processes word list text file into word objects, then stores them.
 
+    :return: None
+    :rtype: NoneType
     """
     # Get the list of strings
     word_string_list = get_raw_word_list()
