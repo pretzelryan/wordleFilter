@@ -12,6 +12,7 @@ import pickle
 # Globals
 SOURCE_WORD_LIST_TXT = "words.txt"
 STORED_WORD_LIST_PKL = "word_objects.pkl"
+LETTERS_IN_WORD = 5
 
 
 class Word:
@@ -71,6 +72,26 @@ class Word:
         :rtype: str
         """
         return self.word
+
+    def get_letter(self, index) -> str:
+        """
+        Returns the letter in the i-th position in the word.
+
+        :return: string letter
+        :rtype: str
+        """
+        if not (0 <= index < LETTERS_IN_WORD):
+            raise ValueError(f"Index must be between 0 and {LETTERS_IN_WORD}. Got {index}.")
+        return self.word[index]
+
+    def __repr__(self):
+        """
+        String representation of the word.
+
+        :return: word string
+        :rtype: str
+        """
+        return self.get_string()
 
 
 def _open_word_list_txt() -> list[str]:
