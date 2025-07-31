@@ -1,18 +1,17 @@
 ######################################
 #
-# WordleFilter - Class representing individual .
+# WordleFilter - Class representing individual words. Also handles importing list of word objects.
 #
 # author - Ryan Muetzel (@pretzelryan)
 #
 
 # imports
 import subprocess
-import csv
 import pickle
 
 # Globals
 SOURCE_WORD_LIST_TXT = "words.txt"
-STORED_WORDS_FILE = "word_objects.pkl"
+STORED_WORD_LIST_PKL = "word_objects.pkl"
 
 
 class Word:
@@ -64,8 +63,17 @@ class Word:
         self.precomputed_average = precomputed_average
         self.expected_additional_guesses = expected_additional_guesses
 
+    def get_string(self) -> str:
+        """
+        Returns the string word.
 
-def _open_raw_word_list() -> list[str]:
+        :return: word string
+        :rtype: str
+        """
+        return self.word
+
+
+def _open_word_list_txt() -> list[str]:
     """
     Opens the raw text file of words.
 
@@ -77,6 +85,19 @@ def _open_raw_word_list() -> list[str]:
     """
     with open(SOURCE_WORD_LIST_TXT, "r") as f:
         return f.read().splitlines()
+
+def _open_word_list_pkl() -> list[Word]:
+    """
+    Opens pickle file of word objects.
+
+    Raises:
+        FileNotFoundError if pickle file does not exist or cannot be found.
+
+    :return: list of word objects
+    :rtype: list[Word]
+    """
+    with open(STORED_WORD_LIST_PKL, "rb") as f:
+        return pickle.load(f)
 
 def _convert_string_to_num(val: str | list[str]) -> int | float | str | list:
     """
@@ -116,11 +137,11 @@ def get_raw_word_list() -> list[str]:
     :rtype: list[str]
     """
     try:
-        return _open_raw_word_list()
+        return _open_word_list_txt()
 
     except FileNotFoundError as e:
         import_word_list()
-        return _open_raw_word_list()
+        return _open_word_list_txt()
 
 def import_word_list():
     """
@@ -169,7 +190,7 @@ def generate_words_file():
         word_object_list[i] = Word(*fields)
 
     # store the words file
-    with open(STORED_WORDS_FILE, 'wb') as file:
+    with open(STORED_WORD_LIST_PKL, 'wb') as file:
         pickle.dump(word_object_list, file)
 
 def get_words_file() -> list[Word]:
@@ -181,4 +202,8 @@ def get_words_file() -> list[Word]:
     :return:
     :rtype: list[Word]
     """
-    pass
+    try:
+        return _open_word_list_pkl()
+    except FileNotFoundError as e:
+        generate_words_file()
+        return _open_word_list_pkl()
