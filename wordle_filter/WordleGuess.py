@@ -56,6 +56,7 @@ class WordleGuess:
 
         :return: Dictionary of length three, with elements "green", "yellow", and "grey" enumeration corresponding
         to integer lists that describe the locations of the colored elements.
+        :rtype: dict[LetterColor, list[int]]
         """
         # Decision to format color_list into dict to make the filtering function simpler.
         # example dict = {green: [1, 2], yellow: [4], grey: [3, 5]}
@@ -68,6 +69,26 @@ class WordleGuess:
             location_dict[self.color_list[i]].append(i)
 
         return location_dict
+
+    def get_word(self) -> Word:
+        """
+        Return the word object in the guess
+
+        :return: word object
+        :rtype: Word
+        """
+        return self.word
+
+    def __eq__(self, other) -> bool:
+        """
+        Equality operator for wordle guess.
+
+        :param other: other word object
+        :type other: WordleGuess
+        :return: true if wordle guess matches other wordle guess, false otherwise.
+        :rtype: bool
+        """
+        return self.get_word() == other.get_word()
 
     def __repr__(self):
         """
