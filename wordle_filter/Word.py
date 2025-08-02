@@ -84,7 +84,7 @@ class Word:
             raise ValueError(f"Index must be between 0 and {LETTERS_IN_WORD}. Got {index}.")
         return self.word[index]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         String representation of the word.
 
@@ -92,6 +92,22 @@ class Word:
         :rtype: str
         """
         return self.get_string()
+
+    def __eq__(self, other: object | str) -> bool:
+        """
+        Equality operator. Compares the string of other to string of this word.
+
+        :param other: other word object or string
+        :type other: Word
+        :return: true if self and other are equal, false otherwise
+        :rtype: bool
+        """
+        #
+        if isinstance(other, Word):
+            return self.get_string() == other.get_string()
+        elif isinstance(other, str):
+            return self.get_string() == other
+        return NotImplemented
 
 
 def _open_word_list_txt() -> list[str]:
@@ -224,7 +240,7 @@ def get_words_file() -> list[Word]:
 
     If list of objects does not yet exist, it will be created.
 
-    :return:
+    :return: list of word objects
     :rtype: list[Word]
     """
     try:
@@ -232,3 +248,16 @@ def get_words_file() -> list[Word]:
     except FileNotFoundError as e:
         generate_words_file()
         return _open_word_list_pkl()
+
+def find_word_from_string(word_list: list[Word], target_string: str) -> Word | None:
+    """
+    Finds the first Word object in the word list provided.
+
+    :param word_list: list of word objects to be searched
+    :type word_list: list[Word]
+    :param target_string: string of word to search for
+    :type target_string: str
+    :return: Word object with matching string to target string if found, otherwise None
+    :rtype: Word | None
+    """
+    return next((word for word in word_list if word == target_string), None)
