@@ -107,7 +107,7 @@ class WordleFilter:
         """
         for i in index_list:
             # Remove the word if it does not contain the yellow letter.
-            if word_string[i] not in word_string:
+            if guess_string[i] not in word_string:
                 self.remaining_word_list.remove(word)
                 return True
 
@@ -119,7 +119,7 @@ class WordleFilter:
         # word is not removed, return false
         return False
 
-    def _filter_grey(self, word: Word, word_string: str,
+    def _filter_grey(self, word: Word, word_string: str, guess_string: str,
                      available_letters: set[str], index_list: list[int]) -> bool:
         """
         Determine if a word is still valid based on the grey index list.
@@ -128,6 +128,8 @@ class WordleFilter:
         :type word: Word
         :param word_string: String of word object
         :type word_string: str
+        :param guess_string: String of guess
+        :type guess_string: str
         :param available_letters: list of grey letters in guess that are not used in the solution elsewhere
         :type available_letters: set[str]
         :param index_list: list of index of grey letters in guess
@@ -138,6 +140,12 @@ class WordleFilter:
         for i in index_list:
             # if the word contains a letter that is guaranteed to not be part of the solution, remove it
             if word_string[i] in available_letters:
+                self.remaining_word_list.remove(word)
+                return True
+
+            # for cases of repeated letters where the duplicate letter is in green/yellow list
+            # remove words that have that letter in the grey position
+            elif guess_string[i] == word_string[i]:
                 self.remaining_word_list.remove(word)
                 return True
 
@@ -163,9 +171,9 @@ class WordleFilter:
         green_letters = {guess_string[i] for i in green_index_list}
         yellow_letters = {guess_string[i] for i in yellow_index_list}
         grey_letters = {guess_string[i] for i in grey_index_list
-                             if guess_string[i] not in green_letters or yellow_letters}
+                        if guess_string[i] not in green_letters and guess_string[i] not in yellow_letters}
 
-        # Use a copy of the word list during iteration to avoid runtime errors.
+        # Use a copy of the word list during iteration
         for word in self.remaining_word_list.copy():
             word_string = word.get_string()
             # example dict = {green: [1, 2], yellow: [4], grey: [3, 5]}
@@ -176,6 +184,6 @@ class WordleFilter:
                 continue
             if self._filter_yellow(word, word_string, guess_string, yellow_index_list):
                 continue
-            if self._filter_grey(word, word_string, grey_letters, grey_index_list):
+            if self._filter_grey(word, word_string, guess_string, grey_letters, grey_index_list):
                 continue
             # if a word was not removed, it is still a valid guess
