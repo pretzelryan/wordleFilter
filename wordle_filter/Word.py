@@ -63,6 +63,7 @@ class Word:
         self.prior = prior
         self.precomputed_average = precomputed_average
         self.expected_additional_guesses = expected_additional_guesses
+        self.score = float(0)
 
     def get_string(self) -> str:
         """
@@ -72,6 +73,26 @@ class Word:
         :rtype: str
         """
         return self.word
+
+    def get_level(self) -> int:
+        """
+        Returns the level of the word. Level corresponds to if a word is a common word, thus likely to
+        be a possible solution. Level 0 represents common words.
+
+        :return: int level of word
+        :rtype: int
+        """
+        return self.level
+
+    def get_score(self) -> float:
+        """
+        Returns the score of the word. Score corresponds to the efficiency of the word as a guess.
+        Words that should find the solution faster have a higher score.
+
+        :return: float score of word
+        :rtype: float
+        """
+        return self.score
 
     def get_letter(self, index) -> str:
         """
@@ -83,6 +104,18 @@ class Word:
         if not (0 <= index < LETTERS_IN_WORD):
             raise ValueError(f"Index must be between 0 and {LETTERS_IN_WORD}. Got {index}.")
         return self.word[index]
+
+    def set_score(self, score: float) -> None:
+        """
+        Sets the score of the word. Score corresponds to the efficiency of the word as a guess.
+        Words that should find the solution faster have a higher score.
+
+        :param score: float score
+        :type score: float
+        :return: None
+        :rtype: NoneType
+        """
+        self.score = score
 
     def __repr__(self) -> str:
         """
@@ -102,7 +135,6 @@ class Word:
         :return: true if self and other are equal, false otherwise
         :rtype: bool
         """
-        #
         if isinstance(other, Word):
             return self.get_string() == other.get_string()
         elif isinstance(other, str):
