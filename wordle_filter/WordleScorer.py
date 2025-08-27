@@ -24,7 +24,7 @@ def filter_level_zero_words(word_list: list[Word]) -> list[Word]:
 
 def sort_word_list_by_score(word_list: list[Word]) -> None:
     """
-    Sorts the word list by score in decreasing order. This function mutates the list itself,
+    Sorts the word list by score in decreasing order (high to low). This function mutates the list itself,
     so nothing is returned.
 
     :param word_list: Word list to sort
@@ -32,7 +32,7 @@ def sort_word_list_by_score(word_list: list[Word]) -> None:
     :return: None
     :rtype: NoneType
     """
-    pass
+    word_list.sort(key=lambda word: word.get_score(), reverse=True)
 
 
 def score_words(word_list: list[Word], use_entropy=False) -> None:
@@ -50,14 +50,18 @@ def score_words(word_list: list[Word], use_entropy=False) -> None:
     word list. This chooses guesses that will gain information about the most common letters, thus narrowing
     the solution space. This approach is less efficient, but more generally more initiative.
 
-    :param use_entropy: Optional. True if entropy scorer should be used, false if heuristic scorer should be used. Defaults to False.
+    :param use_entropy: Optional. True if entropy scorer should be used, false if heuristic scorer should be used.
+                        Defaults to false.
     :type use_entropy: bool
     :param word_list: List of word objects to score
     :type word_list: list[Word]
     :return: None
     :rtype: NoneType
     """
-    pass
+    if use_entropy:
+        _score_words_entropy(word_list)
+    else:
+        _score_words_heuristic(word_list)
 
 
 def _score_words_entropy(word_list: list[Word]) -> None:
@@ -70,7 +74,7 @@ def _score_words_entropy(word_list: list[Word]) -> None:
     :return: None
     :rtype: NoneType
     """
-    pass
+    raise NotImplementedError("Entropy scorer is not yet implemented.")
 
 
 def _calculate_entropy_score(word: Word) -> None:
@@ -97,6 +101,10 @@ def _score_words_heuristic(word_list: list[Word]) -> None:
     :return: None
     :rtype: NoneType
     """
+    raise NotImplementedError("Heuristic scorer is not yet implemented.")
+    # first construct a data structure of what letters exist where for the provided word list.
+    # then use that data structure to score each word (_calculate_heuristic_score)
+    # then normalize the score from 0-99
 
 
 def _calculate_heuristic_score(word: Word) -> None:
@@ -111,3 +119,30 @@ def _calculate_heuristic_score(word: Word) -> None:
     pass
     # This function might get removed or mechanically changed
     # depends on implementation of the scoring algorithm
+
+def _normalize_scores(word_list: list[Word], minimum: int=0, maximum: int=99) -> None:
+    """
+    Linearly adjusts all scores to fall within the minimum and maximum possible values.
+    Function mutates existing word list, so nothing is returned.
+
+    :param word_list: List of word objects with scores.
+    :type word_list: list[Word]
+    :param minimum: Lowest number to scale the scores to.
+    :type minimum: int
+    :param maximum: Highest number to scale the scores to.
+    :type maximum: int
+    :return: None
+    :rtype: NoneType
+    """
+    # get the existing minimum and maximum scores
+    existing_min_score = min(word_list, key=lambda word: word.get_score()).get_score()
+    existing_max_score = max(word_list, key=lambda word: word.get_score()).get_score()
+    existing_range = existing_max_score - existing_min_score
+    target_range = maximum - minimum
+
+    # scale the score of each word
+    for word in word_list:
+        old_score = word.get_score()
+        new_score = ((old_score - existing_min_score) / existing_range) \
+                    + target_range + existing_min_score
+        word.set_score(new_score)
