@@ -5,8 +5,82 @@
 # author - Ryan Muetzel (@pretzelryan)
 #
 
+# imports
+from string import ascii_lowercase
+from typing import Optional
+
 # local package imports
-from .Word import Word
+from .Word import Word, LETTERS_IN_WORD
+
+
+class LetterTracker:
+    """
+    Tracks the frequency of letters in a list of words by letter index.
+
+    """
+
+    def __init__(self, word_list: list[Word], word_length: int):
+        """
+        Constructor.
+
+        :param word_list: list of word objects.
+        :type word_list: list[Word]
+        """
+        # initialize data structure for letter storage
+        self.indexed_letter_counts = [_create_letter_dict() for letter in range(word_length)]
+        self.total_letter_counts = _create_letter_dict()
+
+        # count the letters for each word
+        for word in word_list:
+            self._add_indexed_letter_count(word)
+
+        # update the total letter count at the end
+        self._add_total_letter_count()
+
+    def _add_indexed_letter_count(self, word: Word) -> None:
+        """
+        Updates the indexed letter count for a word.
+
+        :param word: word object to be counted.
+        :type word: Word
+        :return: None
+        :rtype: NoneType
+        """
+        word_str = word.get_string()
+        for index in range(len(word_str)):
+            letter = word_str[index]
+            self.indexed_letter_counts[index][letter] += 1
+
+    def _add_total_letter_count(self):
+        """
+        Updates the total letter count based on the indexed letter counts.
+
+        :return: None
+        :rtype: NoneType
+        """
+        for letter in self.total_letter_counts:
+            for index in range(len(self.indexed_letter_counts)):
+                self.total_letter_counts[letter] += self.indexed_letter_counts[index][letter]
+
+    def get_letter_count(self, letter: str, index: Optional[int] = None) -> int:
+        """
+        Returns the number of times a letter appears in the all the remaining words.
+        When the optional index parameter is supplied, the count returned refers only to that index.
+        Otherwise, returns the count for all indexes.
+
+        :param letter: target letter to look up count.
+        :type letter: str
+        :param index: Optional, index to look up count.
+        :type index: int
+        :return: count of times the letter appears in word list.
+        :rtype: int
+        """
+        # if no index is provided then return the total  count for that letter
+        if index is None:
+            return self.total_letter_counts[letter]
+
+        # otherwise return the count for the letter at the specified index
+        return self.indexed_letter_counts[index][letter]
 
 
 def filter_level_zero_words(word_list: list[Word]) -> list[Word]:
@@ -107,6 +181,20 @@ def _score_words_heuristic(word_list: list[Word]) -> None:
     # then normalize the score from 0-99
 
 
+def _calculate_letter_frequency(word_list: list[Word]) -> LetterTracker:
+    """
+    Calculates the frequency of letters for the words in the provided word list.
+    Letters are tracked for where in the word they show up.
+
+    :param word_list:
+    :type word_list:
+    :return:
+    :rtype:
+    """
+    # simply construct and return a letter tracker object. The constructor handles the calculations here.
+    return LetterTracker(word_list, LETTERS_IN_WORD)
+
+
 def _calculate_heuristic_score(word: Word) -> None:
     """
     Calculates the score for a word using heuristic method. Directly modifies word object.
@@ -119,6 +207,7 @@ def _calculate_heuristic_score(word: Word) -> None:
     pass
     # This function might get removed or mechanically changed
     # depends on implementation of the scoring algorithm
+
 
 def _normalize_scores(word_list: list[Word], minimum: int=0, maximum: int=99) -> None:
     """
@@ -143,6 +232,36 @@ def _normalize_scores(word_list: list[Word], minimum: int=0, maximum: int=99) ->
     # scale the score of each word
     for word in word_list:
         old_score = word.get_score()
-        new_score = ((old_score - existing_min_score) / existing_range) \
-                    + target_range + existing_min_score
+        scaled_score = ((old_score - existing_min_score) / existing_range) * target_range + existing_min_score
+
+        # the scaled score may be a float, but we only want ints. Round it and clamp to min/max range
+        new_score = _clamp_integer(scaled_score)
         word.set_score(new_score)
+
+def _clamp_integer(score: int | float, minimum: int=0, maximum: int=99) -> int:
+    """
+    Rounds the score to the nearest integer, then clamps the score to ensure it falls within
+    the maximum and minimum values.
+
+    :param score: Score to round and clamp.
+    :type score: int | float
+    :param minimum: Minimum range.
+    :type minimum: int
+    :param maximum: Maximum range.
+    :type maximum: int
+    :return: Adjusted score.
+    :rtype: int
+    """
+    new_score = round(score)
+    return max(minimum, min(new_score, maximum))
+
+
+def _create_letter_dict() -> dict[str, int]:
+    """
+    Creates a new dict to hold the letter frequencies. Returns a dictionary with all letters english letters
+    as keys and zero as the value for all keys
+
+    :return: dictionary with all letters english letters as keys and zero as the value.
+    :rtype: dict
+    """
+    return {letter: 0 for letter in ascii_lowercase}
