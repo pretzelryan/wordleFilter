@@ -63,7 +63,7 @@ class Word:
         self.prior = prior
         self.precomputed_average = precomputed_average
         self.expected_additional_guesses = expected_additional_guesses
-        self.score = float(0)
+        self.score = int(0)
 
     def get_string(self) -> str:
         """
@@ -84,13 +84,13 @@ class Word:
         """
         return self.level
 
-    def get_score(self) -> float:
+    def get_score(self) -> int:
         """
         Returns the score of the word. Score corresponds to the efficiency of the word as a guess.
         Words that should find the solution faster have a higher score.
 
-        :return: float score of word
-        :rtype: float
+        :return: int score of word
+        :rtype: int
         """
         return self.score
 
@@ -105,13 +105,13 @@ class Word:
             raise ValueError(f"Index must be between 0 and {LETTERS_IN_WORD}. Got {index}.")
         return self.word[index]
 
-    def set_score(self, score: float) -> None:
+    def set_score(self, score: int | float) -> None:
         """
         Sets the score of the word. Score corresponds to the efficiency of the word as a guess.
         Words that should find the solution faster have a higher score.
 
-        :param score: float score
-        :type score: float
+        :param score: int score
+        :type score: int | float
         :return: None
         :rtype: NoneType
         """
