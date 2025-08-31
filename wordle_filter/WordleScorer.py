@@ -122,7 +122,7 @@ def score_words(word_list: list[Word], use_entropy=False) -> None:
 
     Heuristic attempts to find the word that has the most common letters based on the words left in the
     word list. This chooses guesses that will gain information about the most common letters, thus narrowing
-    the solution space. This approach is less efficient, but more generally more initiative.
+    the solution space. This approach is less efficient, but more generally more intuitive.
 
     :param use_entropy: Optional. True if entropy scorer should be used, false if heuristic scorer should be used.
                         Defaults to false.
@@ -175,10 +175,16 @@ def _score_words_heuristic(word_list: list[Word]) -> None:
     :return: None
     :rtype: NoneType
     """
-    raise NotImplementedError("Heuristic scorer is not yet implemented.")
-    # first construct a data structure of what letters exist where for the provided word list.
-    # then use that data structure to score each word (_calculate_heuristic_score)
-    # then normalize the score from 0-99
+    # construct a data structure of what letters exist where for the provided word list.
+    tracker = _calculate_letter_frequency(word_list)
+
+    # use data structure to score each word
+    for word in word_list:
+        _calculate_heuristic_score(word, tracker)
+
+    # then normalize the score from 0-99 and sort
+    _normalize_scores(word_list)
+    sort_word_list_by_score(word_list)
 
 
 def _calculate_letter_frequency(word_list: list[Word]) -> LetterTracker:
@@ -195,7 +201,8 @@ def _calculate_letter_frequency(word_list: list[Word]) -> LetterTracker:
     return LetterTracker(word_list, LETTERS_IN_WORD)
 
 
-def _calculate_heuristic_score(word: Word) -> None:
+def _calculate_heuristic_score(word: Word, tracker: LetterTracker,
+                               index_weight: int=5, overall_weight: int=1) -> None:
     """
     Calculates the score for a word using heuristic method. Directly modifies word object.
 
@@ -204,9 +211,30 @@ def _calculate_heuristic_score(word: Word) -> None:
     :return: None
     :rtype: NoneType
     """
-    pass
-    # This function might get removed or mechanically changed
-    # depends on implementation of the scoring algorithm
+    # Current scoring methodology:
+    # For each index of the word, get the letter in that index.
+    # Then look up the number of occurrences for that letter in that indexed position and overall.
+    # Add a score multiplied by weights for position specific and overall frequency.
+    #
+    # To not over incentivise words with the most common letters (ex: the word ARARS), the overall weight
+    # will only be accounted for if that letter only appears once in the word. If a letter appears more than
+    # once in the word, only consider the index specific contribution and ignore the overall frequency.
+
+    new_score = 0
+
+    for index in range(LETTERS_IN_WORD):
+        letter = word.get_letter(index)
+
+        # calculate the index dependant weighting
+        index_count = tracker.get_letter_count(letter, index)
+        new_score += index_count * index_weight
+
+        # only do index independent weighting if there is one occurrence of the letter
+        if word.get_string().count(letter) == 1:
+            overall_count = tracker.get_letter_count(letter)
+            new_score += overall_count * overall_weight
+
+    word.set_score(new_score)
 
 
 def _normalize_scores(word_list: list[Word], minimum: int=0, maximum: int=99) -> None:
