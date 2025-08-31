@@ -52,7 +52,7 @@ class Word:
         :type expected_additional_guesses: float
         """
 
-        self.word = word
+        self._set_string(word)
         self.level = level
         self.entropy_vec = entropy_vec
         self.percentile_vec = percentile_vec
@@ -64,6 +64,20 @@ class Word:
         self.precomputed_average = precomputed_average
         self.expected_additional_guesses = expected_additional_guesses
         self.score = int(0)
+
+    def _set_string(self, word_str: str) -> None:
+        """
+        Set the string of word. Should only be called from word object constructor.
+
+        :param word_str: String of word object.
+        :type word_str: str
+        :return: None
+        :rtype: NoneType
+        """
+        if len(word_str) != LETTERS_IN_WORD:
+            raise ValueError(f"Word string must have length equal to word length. "
+                             f"Expected {LETTERS_IN_WORD}, but got {len(word_str)}.")
+        self.word = word_str
 
     def get_string(self) -> str:
         """
