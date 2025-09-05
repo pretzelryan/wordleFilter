@@ -2,6 +2,7 @@
 *.idea/
 *.txt
 *.pkl
+*.pptx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
