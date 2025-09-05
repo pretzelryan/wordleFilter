@@ -11,8 +11,7 @@ from enum import Enum
 
 
 # Project Imports
-from .Word import Word
-from .Word import LETTERS_IN_WORD
+from .Word import Word, LETTERS_IN_WORD
 
 
 class LetterColor(Enum):

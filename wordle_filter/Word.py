@@ -52,7 +52,7 @@ class Word:
         :type expected_additional_guesses: float
         """
 
-        self.word = word
+        self._set_string(word)
         self.level = level
         self.entropy_vec = entropy_vec
         self.percentile_vec = percentile_vec
@@ -63,6 +63,21 @@ class Word:
         self.prior = prior
         self.precomputed_average = precomputed_average
         self.expected_additional_guesses = expected_additional_guesses
+        self.score = int(0)
+
+    def _set_string(self, word_str: str) -> None:
+        """
+        Set the string of word. Should only be called from word object constructor.
+
+        :param word_str: String of word object.
+        :type word_str: str
+        :return: None
+        :rtype: NoneType
+        """
+        if len(word_str) != LETTERS_IN_WORD:
+            raise ValueError(f"Word string must have length equal to word length. "
+                             f"Expected {LETTERS_IN_WORD}, but got {len(word_str)}.")
+        self.word = word_str
 
     def get_string(self) -> str:
         """
@@ -72,6 +87,26 @@ class Word:
         :rtype: str
         """
         return self.word
+
+    def get_level(self) -> int:
+        """
+        Returns the level of the word. Level corresponds to if a word is a common word, thus likely to
+        be a possible solution. Level 0 represents common words.
+
+        :return: int level of word
+        :rtype: int
+        """
+        return self.level
+
+    def get_score(self) -> int:
+        """
+        Returns the score of the word. Score corresponds to the efficiency of the word as a guess.
+        Words that should find the solution faster have a higher score.
+
+        :return: int score of word
+        :rtype: int
+        """
+        return self.score
 
     def get_letter(self, index) -> str:
         """
@@ -83,6 +118,18 @@ class Word:
         if not (0 <= index < LETTERS_IN_WORD):
             raise ValueError(f"Index must be between 0 and {LETTERS_IN_WORD}. Got {index}.")
         return self.word[index]
+
+    def set_score(self, score: int | float) -> None:
+        """
+        Sets the score of the word. Score corresponds to the efficiency of the word as a guess.
+        Words that should find the solution faster have a higher score.
+
+        :param score: int score
+        :type score: int | float
+        :return: None
+        :rtype: NoneType
+        """
+        self.score = score
 
     def __repr__(self) -> str:
         """
@@ -102,7 +149,6 @@ class Word:
         :return: true if self and other are equal, false otherwise
         :rtype: bool
         """
-        #
         if isinstance(other, Word):
             return self.get_string() == other.get_string()
         elif isinstance(other, str):
